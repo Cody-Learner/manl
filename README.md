@@ -1,4 +1,4 @@
-# manl<br>
+# manl (rewrite Aug 8, 2019)<br>
 
 Manl combines a manpage, prepended with your personal notes in a CLI or GUI editor.			<br>
 Makes it convenient to create/edit and save new/edited notes while reviewing manpages.			<br>
