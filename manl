@@ -1,0 +1,133 @@
+#!/bin/bash
+# manl 2019-08-08
+# historically opened "man" pages in "l"eafpad
+
+#=======================================================================================================
+			# Set editor just in case not already setup
+CLIeditor=nano
+GUIeditor=leafpad
+Editor="$(if [[ -z $DISPLAY ]]; then echo "$CLIeditor" ; else echo "$GUIeditor" ; fi)"
+
+#=======================================================================================================
+			# Print [-h --help] page
+
+if	[[ ${1} = -h ]] || [[ ${1} = --help ]]; then 
+
+cat << 'EOF'
+
+    manl opens man pages in your editor, prepended by either   
+    existing notes and/or makeing it easy to edit/create notes.
+
+
+    Usage :  manl <subject> -or-  manl <number subject>
+    Use ie:  manl signal    -or-  manl 7 signal
+
+
+    Notes automatically saved under  ~/.manl/<manpage "name"> or <manpage "number_name"]
+
+    To save notes, just save in editor. It will create or edit ~/.manl/<manpage>.
+    Manpage is automatically removed from notes after saving.
+    No changes made to manpages (read only).
+
+EOF
+	exit
+fi
+
+#=======================================================================================================
+			# Prep existing notes + manpage for editor      #
+			# else
+			# Prep manpage for editor + potential note save #
+			# shellcheck: SC2002: Useless cat. Nope, intentional.
+
+if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then	### IF [NUMBER]_[MANPAGE] exists in ~/.manl
+	cat ~/.manl/"${1}_${2}" | tee /tmp/"${1}_${2}_"
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
+    elif
+	[[ -n ${2} ]]; then
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
+fi
+
+
+if	[[ -z ${2} ]] && [[ -e  ~/.manl/"${1}" ]]; then		### IF (without number) [MANPAGE] exists in ~/.manl
+	cat ~/.manl/"${1}" | tee /tmp/"${1}_"
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
+    elif
+	[[ -z ${2} ]]; then
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
+fi
+
+#=======================================================================================================
+			# Print manpage, or notes + manpage, in editor
+
+if	[[ -n ${2} ]]; then					### IN EDITOR [NUMBER]_[MANPAGE]
+	cp /tmp/"${1}_${2}_" ~/.manl/"${1}_${2}_"
+	"$Editor" ~/.manl/"${1}_${2}_"
+
+	tmpmd5=$(md5sum /tmp/"${1}_${2}_" | awk '{ print $1 }')
+	manlmd5=$(md5sum ~/.manl/"${1}_${2}_" | awk '{ print $1 }')
+	# echo "tmp  ${tmpmd5}"
+	# echo "manl ${manlmd5}"
+fi
+
+if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
+	echo "Saved as ~/.manl/${1}_${2}" ; echo
+
+		if	[[ -e  ~/.manl/${1}_${2} ]]; then
+			mv ~/.manl/"${1}_${2}" ~/.manl/"${1}_${2}.bu"
+		fi
+
+	cp ~/.manl/"${1}_${2}_"  ~/.manl/"${1}_${2}"
+	rm ~/.manl/"${1}_${2}_"
+	rm /tmp/"${1}_${2}_"
+
+    elif
+	[[ -n ${2} ]]; then
+	rm ~/.manl/"${1}_${2}_"
+	rm /tmp/"${1}_${2}_"
+
+	# exit
+fi
+
+if	[[ -z ${2} ]]; then					### IN EDITOR (without number) [MANPAGE]
+	cp /tmp/"${1}_" ~/.manl/"${1}_"
+	"$Editor" ~/.manl/"${1}_"
+
+	tmpmd5=$(md5sum /tmp/"${1}_" | awk '{ print $1 }')
+	manlmd5=$(md5sum ~/.manl/"${1}_" | awk '{ print $1 }')
+	# echo "tmp  ${tmpmd5}"
+	# echo "manl ${manlmd5}"
+fi
+
+if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
+	echo "Saved as ~/.manl/${1}" ; echo
+
+		if	[[ -e  ~/.manl/"${1}" ]]; then
+			mv ~/.manl/"${1}" ~/.manl/"${1}.bu"
+		fi
+
+	cp ~/.manl/"${1}_"  ~/.manl/"${1}"
+	rm ~/.manl/"${1}_"
+	rm /tmp/"${1}_"
+    elif
+	[[ -z ${2} ]]; then
+	rm ~/.manl/"${1}_"
+	rm /tmp/"${1}_"
+fi
+
+#=======================================================================================================
+			# Auto delete manpage from notes
+
+
+if	[[ -z ${2} ]]; then							### FOR [NUMBER]_[MANPAGE]
+	del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
+	sed '/'"$del"'/,$d' ~/.manl/"${1}" > ~/.manl/"${1}".tmp
+	rm ~/.manl/"${1}"
+	mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
+fi
+
+if	[[ -n ${2} ]]; then
+	del=$(echo "${1}_${2}" | tr '[:lower:]' '[:upper:]')			### FOR (without number) [MANPAGE]
+	sed '/'"$del"'/,$d' ~/.manl/"${1}_${2}" > ~/.manl/"${1}_${2}".tmp
+	rm ~/.manl/"${1}_${2}_"
+	mv ~/.manl/"${1}_${2}".tmp  ~/.manl/"${1}_${2}"
+fi
