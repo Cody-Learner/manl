@@ -62,8 +62,8 @@ if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then	### IF [NUMBER]_[MANPAGE] 
 	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
     elif
 	[[ -n ${2} ]]; then
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" \
-    ||	[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit
+	#[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
 fi
 
 
@@ -72,8 +72,8 @@ if	[[ -z ${2} ]] && [[ -e ~/.manl/${1} ]]; then		### IF (no number) [MANPAGE] ex
 	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
     elif
 	[[ -z ${2} ]]; then
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" \
-    ||	[[ -s ~/.manl/${1} ]] && "$Editor" ~/.manl/"${1}" ; exit || exit
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit	
+	#[[ -s ~/.manl/${1} ]] && "$Editor" ~/.manl/"${1}" ; exit || exit
 fi
 
 
