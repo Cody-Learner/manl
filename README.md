@@ -8,11 +8,14 @@ Copy/paste in an editor, information from manpages, add content, save to your no
 File name  and path  are preset by manl, just save your changes.					<br>
 Next time you use manl <manpage>, your notes will be printed above the manpage.				<br>
 
-Usage:													<br>
+    Operations:												<br>
+		-h --help  =  help page									<br>
+		-Sn        =  Search for <manpage> numbers						<br>
+		-St        =  Search manpages for <term> "man -k <term>"				<br>
 
-manl \<manpage\>											<br>
-
-notes saved as same as ~/.manl/\<manpage name\>								<br>
+    Usage   :  manl [operation] <manpage> -or-  manl <number manpage>					<br>
+    Examples:  manl signal                -or-  manl 7 signal						<br>
+               manl -Sn signal										<br>
 
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 <br>
