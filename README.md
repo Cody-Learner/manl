@@ -9,13 +9,15 @@ File name  and path  are preset by manl, just save your changes.					<br>
 Next time you use manl <manpage>, your notes will be printed above the manpage.				<br>
 
 Operations:												<br>
-		-h --help  =  help page									<br>
-		-Sn        =  Search for <manpage> numbers						<br>
-		-St        =  Search manpages for <term> "man -k <term>"				<br>
+   -h --help  =  help page										<br>
+   -Sn        =  Search for <manpage> numbers								<br>
+   -St        =  Search manpages for <term> "man -k <term>"						<br>
 
-Usage   	:  manl [operation] <manpage> -or-  manl <number manpage>				<br>
-Examples	:  manl signal                -or-  manl 7 signal					<br>
-		:  manl -Sn signal									<br>
+Usage:  
+   manl [operation] <manpage> -or-  manl <number manpage>						<br>
+Examples:  
+   manl signal                -or-  manl 7 signal							<br>
+   manl -Sn signal											<br>
 
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 <br>
