@@ -1,5 +1,5 @@
 #!/bin/bash
-# manl 2019-08-11
+# manl 2019-08-13
 # historically opened [man] pages in [l]eafpad
 
 #=======================================================================================================
@@ -20,12 +20,12 @@ cat << 'EOF'
 
     Operations:
 		-h --help  =  help page
-		-S         =  Search <manpage> , numbers
-
+		-Sn        =  Search for <manpage> numbers
+		-St        =  Search manpages for <term> "man -k <term>"
 
     Usage   :  manl [operation] <manpage> -or-  manl <number manpage>
     Examples:  manl signal    -or-  manl 7 signal
-               manl -S signal
+               manl -Sn signal
 
 
     Notes automatically saved under  ~/.manl/<manpage "name"> or <manpage "number_name"]
@@ -39,53 +39,43 @@ EOF
 fi
 
 #=======================================================================================================
-			# Search numbered manpages 
-			# Workaround shell var in awk
+			# Search Operations
 
-if	[[ $1 = -S ]]; then 
+if	[[ $1 = -Sn ]]; then 
+	find /usr/share/man/man* | awk -v manp="${2}" -F / ' $0 ~ "/"manp {print $5 " " $6}'
+    exit
+fi
 
-manp="${2}"
-
-awk_shell_var () {
-
-	echo; echo "Numbered manpages for ${manp}:"; echo
-
-cat << EOF > /tmp/awk-shellvar
-#!/bin/bash
-find /usr/share/man/man* | awk -F / '/\/${manp}/ {print \$5 " " \$6}'
-EOF
-	chmod +x /tmp/awk-shellvar
-	/tmp/awk-shellvar
-	rm /tmp/awk-shellvar
-}
-
-awk_shell_var
-
-exit
-
+if	[[ $1 = -St ]]; then 
+	man -k "${2}"			# man -wK "${2}" | awk -F / '{print $5 " " $6}'
+    exit
 fi
 
 #=======================================================================================================
 			# Prep existing notes + manpage for editor
 			# else
 			# Prep manpage for editor + potential note save
+			# Add ability when "manpage unavailable", to open if present ~/.manl/<notes>. (For "notes title" symlinks.)
 
 if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then	### IF [NUMBER]_[MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}_${2}" /tmp/"${1}_${2}_"
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
     elif
 	[[ -n ${2} ]]; then
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" \
+    ||	[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
 fi
 
 
-if	[[ -z ${2} ]] && [[ -e  ~/.manl/"${1}" ]]; then		### IF (no number) [MANPAGE] exists in ~/.manl
+if	[[ -z ${2} ]] && [[ -e ~/.manl/${1} ]]; then		### IF (no number) [MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}" /tmp/"${1}_"
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
     elif
 	[[ -z ${2} ]]; then
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" \
+    ||	[[ -s ~/.manl/${1} ]] && "$Editor" ~/.manl/"${1}" ; exit || exit
 fi
+
 
 #=======================================================================================================
 			# Print manpage, or notes + manpage, in editor
