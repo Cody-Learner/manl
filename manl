@@ -1,12 +1,20 @@
 #!/bin/bash
-# manl 2019-08-13
+# manl 2020-12-05
 # historically opened [man] pages in [l]eafpad
 
 #=======================================================================================================
-			# Setup manl editor
-CLIeditor=nano
-GUIeditor=leafpad
-Editor="$(if [[ -z $DISPLAY ]]; then echo "$CLIeditor" ; else echo "$GUIeditor" ; fi)"
+			# Uncomment/edit 3 lines here if your EDITOR is not setup.
+#CLIeditor=nano
+#GUIeditor=leafpad
+
+#[[ -z $D{ISPLAY} ]] && Editor="${CLIeditor}" || Editor="${GUIeditor}"
+
+#=======================================================================================================
+[[ -z ${Editor} ]] && Editor="${EDITOR}"
+#=======================================================================================================
+	# Cleanup. If term closed without closing manl, leaves unwanted stuff in ~/.manl
+
+	trap 'rm ~/.manl/"${1}_${2}_" /tmp/"${1}_${2}_" ~/.manl/"${1}_" /tmp/"${1}_" 2>/dev/null' INT TERM EXIT
 
 #=======================================================================================================
 			# Print [-h --help] page
@@ -16,23 +24,30 @@ if	[[ -z ${1} ]] || [[ ${1} = -h ]] || [[ ${1} = --help ]]; then
 cat << 'EOF'
 
     manl opens man pages in your editor, prepended by either
-    existing notes and/or makeing it easy to edit/create notes.
+    existing notes and/or conveniently edit/create notes.
 
     Operations:
 		-h --help  =  help page
-		-Sn        =  Search for <manpage> numbers
-		-St        =  Search manpages for <term> "man -k <term>"
+		-sn        =  Search for <manpage> numbers
+		-st        =  Search manpages for <term> "man -k <term>"
+		-la	   =  List all manpages on system.
 
-    Usage   :  manl [operation] <manpage> -or-  manl <number manpage>
+    Usage   :  manl [operation] <manpage> -or-  manl <number> <manpage>
     Examples:  manl signal    -or-  manl 7 signal
-               manl -Sn signal
+               manl -sn signal
+	       manl -la | grep ^pac
 
+    Man pages path  : /usr/share/man/man<#>/<NAME>.<#>.gz
+    Saved notes path:  ~/.manl/<NAME>  -OR-  ~/.manl/<#> <NAME>
 
-    Notes automatically saved under  ~/.manl/<manpage "name"> or <manpage "number_name"]
+    To save notes, just save in editor. 
+    manl will create or edit ~/.manl/<NAME>  -OR-  ~/.manl/<#> <NAME> as needed.
+    Manpage is removed from notes after saving.
+    No changes are made to manpages.
 
-    To save notes, just save in editor. It will create or edit ~/.manl/<manpage>.
-    Manpage is automatically removed from notes after saving.
-    No changes made to manpages (read only).
+    IMPORTANT INFO: The manpage is removed from saved notes via setting ${del} variable, which is the first
+    		    column in the first line of the man page, usually something like "MANPAGE-NAME(1)".
+		    If you duplicate this in your notes, everything after it will be deleted.
 
 EOF
 	exit
@@ -41,13 +56,19 @@ fi
 #=======================================================================================================
 			# Search Operations 	# man -wK "${2}" | awk -F / '{print $5 " " $6}'
 
-if	[[ $1 = -Sn ]]; then 
+if	[[ $1 = -sn ]]; then 
 	find /usr/share/man/man* | awk -v manp="${2}" -F / ' $0 ~ "/"manp {print $5 " " $6}'
     exit
 fi
 
-if	[[ $1 = -St ]]; then 
+if	[[ $1 = -st ]]; then 
 	man -k "${2}"
+    exit
+fi
+
+if	[[ $1 = -la ]]; then
+	/usr/bin/ls /usr/share/man/man* | grep -v '/usr/share/' | awk 'NF' | sort      # | awk -F.gz '{print $1}'
+	echo; echo "Path: "/usr/share/man/man \<#\> / \<NAME\> ; echo
     exit
 fi
 
@@ -57,30 +78,30 @@ fi
 			# Prep manpage for editor + potential note save
 			# Add ability when "manpage unavailable", to open if present ~/.manl/<notes>. (For "notes title" symlinks.)
 
-if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then	### IF [NUMBER]_[MANPAGE] exists in ~/.manl
+if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then		### IF [NUMBER]_[MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}_${2}" /tmp/"${1}_${2}_"
 	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
     elif
 	[[ -n ${2} ]]; then
 
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit         #[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit	#[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
 fi
 
 
-if	[[ -z ${2} ]] && [[ -e ~/.manl/${1} ]]; then		### IF (no number) [MANPAGE] exists in ~/.manl
+if	[[ -z ${2} ]] && [[ -e ~/.manl/${1} ]]; then			### IF (no number) [MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}" /tmp/"${1}_"
 	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
     elif
 	[[ -z ${2} ]]; then
 
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit                      #[[ -s ~/.manl/${1} ]] ; "$Editor" ~/.manl/"${1}" ; exit || exit
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit			#[[ -s ~/.manl/${1} ]] ; "$Editor" ~/.manl/"${1}" ; exit || exit
 fi
 
 
 #=======================================================================================================
 			# Print manpage, or notes + manpage, in editor
 
-if	[[ -n ${2} ]]; then					### IN EDITOR [NUMBER]_[MANPAGE]
+if	[[ -n ${2} ]]; then						### IN EDITOR [NUMBER]_[MANPAGE]
 	cp /tmp/"${1}_${2}_" ~/.manl/"${1}_${2}_"
 	"$Editor" ~/.manl/"${1}_${2}_"
 
@@ -94,15 +115,17 @@ if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
 	echo; echo "New notes saved as ~/.manl/${1}_${2}"
 
 		if	[[ -e  ~/.manl/${1}_${2} ]]; then
-			mv ~/.manl/"${1}_${2}" ~/.manl/"${1}_${2}.bu"
-			echo; echo "Pre-edited notes saved as ~/.manl/${1}_${2}.bu" ; echo
+			mv ~/.manl/"${1}_${2}" ~/.manl/"${1}_${2}.manlbu"
+			echo; echo "Pre-edited notes saved as ~/.manl/${1}_${2}.manlbu" ; echo
 		fi
 
 	cp ~/.manl/"${1}_${2}_"  ~/.manl/"${1}_${2}"
 	rm ~/.manl/"${1}_${2}_"
-	rm /tmp/"${1}_${2}_"
+	rm /tmp/"${1}_${2}_"						### "${del}" not covering all possible variations.
+									### [ORIGINAL]  del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
+	del=$(man "${1}" "${2}" | awk 'NR==1{print $1}')		### Revision to improve robustness Nov 10, 2020.
+	echo "Deleted everything after ${del} to remove manpage from notes."
 
-	del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
 	sed '/'"$del"'/,$d' ~/.manl/"${1}_${2}" > ~/.manl/"${1}_${2}".tmp
 	mv ~/.manl/"${1}_${2}".tmp  ~/.manl/"${1}_${2}"
     elif
@@ -111,29 +134,35 @@ if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
 	rm /tmp/"${1}_${2}_"
 fi
 
-if	[[ -z ${2} ]]; then					### IN EDITOR (no number) [MANPAGE]
+
+#=======================================================================================================
+			# Print manpage, or notes + manpage, in editor
+
+if	[[ -z ${2} ]]; then						### IN EDITOR (no number) [MANPAGE]
 	cp /tmp/"${1}_" ~/.manl/"${1}_"
 	"$Editor" ~/.manl/"${1}_"
 
 	tmpmd5=$(md5sum /tmp/"${1}_" | awk '{ print $1 }')
 	manlmd5=$(md5sum ~/.manl/"${1}_" | awk '{ print $1 }')
-	# echo "tmp  ${tmpmd5}"
-	# echo "manl ${manlmd5}"
+	# echo "tmp  ${tmpmd5}"						### for testing script
+	# echo "manl ${manlmd5}"					### for testing script
 fi
 
 if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	echo; echo "New notes saved as ~/.manl/${1}"
 
 		if	[[ -e  ~/.manl/"${1}" ]]; then
-			mv ~/.manl/"${1}" ~/.manl/"${1}.bu"
-			echo; echo "Pre-edited notes saved as ~/.manl/${1}_${2}.bu" ; echo
+			mv ~/.manl/"${1}" ~/.manl/"${1}.manlbu"
+			echo; echo "Pre-edited notes saved as ~/.manl/${1}.manlbu" ; echo
 		fi
 
 	cp ~/.manl/"${1}_"  ~/.manl/"${1}"
 	rm ~/.manl/"${1}_"
-	rm /tmp/"${1}_"
+	rm /tmp/"${1}_"							### "${del}" not covering all possible variations.
+									### [ORIGINAL]  del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
+	del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
+	echo "Deleted everything after \" ${del} \" to remove manpage from notes."
 
-	del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
 	sed '/'"$del"'/,$d' ~/.manl/"${1}" > ~/.manl/"${1}".tmp
 	mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
     elif
