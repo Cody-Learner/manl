@@ -2,6 +2,8 @@
 # manl 2020-12-05
 # historically opened [man] pages in [l]eafpad
 
+man_l(){
+
 #=======================================================================================================
 			# Uncomment/edit 3 lines here if your EDITOR is not setup.
 #CLIeditor=nano
@@ -170,4 +172,6 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	rm ~/.manl/"${1}_"
 	rm /tmp/"${1}_"
 fi
+}
 
+man_l "${@}" &
