@@ -1,6 +1,6 @@
 #!/bin/bash
 # manl 2024-02-25
-# historically opened [man] pages in [l]eafpad
+# historically opened [man] pages in [l]eafpad 
 
 export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${BASH_SOURCE} line#:${LINENO} function:${FUNCNAME[0]:+${FUNCNAME[0]}(): }\nstatement: '
 
