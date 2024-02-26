@@ -1,8 +1,8 @@
 #!/bin/bash
-# manl 2020-12-05
+# manl 2024-02-25
 # historically opened [man] pages in [l]eafpad
 
-man_l(){
+export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${BASH_SOURCE} line#:${LINENO} function:${FUNCNAME[0]:+${FUNCNAME[0]}(): }\nstatement: '
 
 #=======================================================================================================
 			# Uncomment/edit 3 lines here if your EDITOR is not setup.
@@ -160,10 +160,13 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 
 	cp ~/.manl/"${1}_"  ~/.manl/"${1}"
 	rm ~/.manl/"${1}_"
-	rm /tmp/"${1}_"							### "${del}" not covering all possible variations.
-									### [ORIGINAL]  del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
-	del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
-	echo "Deleted everything after \" ${del} \" to remove manpage from notes."
+	rm /tmp/"${1}_"	
+
+	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')		### "${del}" not covering all possible variations.
+	# del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
+									### Man pages changed to blank first line, var was empty 2024-02-25.
+	del=$(man "${1}" | awk 'NF{print;exit}' | awk '{print $1}')	### Revision finds first non blank line, then prints first field of it.
+	echo "Deleted everything after first line with \"${del}\", to remove manpage from notes." 
 
 	sed '/'"$del"'/,$d' ~/.manl/"${1}" > ~/.manl/"${1}".tmp
 	mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
@@ -172,6 +175,3 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	rm ~/.manl/"${1}_"
 	rm /tmp/"${1}_"
 fi
-}
-
-man_l "${@}" &
