@@ -22,9 +22,11 @@ Examples:												<br>
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 													<br>
 													<br>
-**UPDATE For  Feb 25, 2024**										<br>
+**UPDATE For  Feb 25 and 26, 2024**									<br>
 Man pages added an empty line at beginning, breaking the 'del' variable.				<br>
 Revised code to detect first non empty line.								<br>
 Removed function wrapping entire script that was attempting to background it in the shell.		<br>
 Added some troubleshooting information code.								<br>
 Revised printed to shell message for clarity.								<br>
+Added the "-i" edit in place option to sed resulting in code reducion.					<br>
+Added comment related to shell check.									<br>
