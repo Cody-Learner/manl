@@ -1,5 +1,5 @@
 #!/bin/bash
-# manl 2024-02-25
+# manl 2024-02-26
 # historically opened [man] pages in [l]eafpad
 
 export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${BASH_SOURCE} line#:${LINENO} function:${FUNCNAME[0]:+${FUNCNAME[0]}(): }\nstatement: '
@@ -12,7 +12,7 @@ export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${
 #[[ -z $D{ISPLAY} ]] && Editor="${CLIeditor}" || Editor="${GUIeditor}"
 
 #=======================================================================================================
-[[ -z ${Editor} ]] && Editor="${EDITOR}"
+[[ -z ${Editor} ]] && Editor="${EDITOR}"								### SC2153 Setting Editor, not EDITOR.
 #=======================================================================================================
 	# Cleanup. If term closed without closing manl, leaves unwanted stuff in ~/.manl
 
@@ -123,13 +123,17 @@ if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
 
 	cp ~/.manl/"${1}_${2}_"  ~/.manl/"${1}_${2}"
 	rm ~/.manl/"${1}_${2}_"
-	rm /tmp/"${1}_${2}_"						### "${del}" not covering all possible variations.
-									### [ORIGINAL]  del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
-	del=$(man "${1}" "${2}" | awk 'NR==1{print $1}')		### Revision to improve robustness Nov 10, 2020.
-	echo "Deleted everything after ${del} to remove manpage from notes."
+	rm /tmp/"${1}_${2}_"
 
-	sed '/'"$del"'/,$d' ~/.manl/"${1}_${2}" > ~/.manl/"${1}_${2}".tmp
-	mv ~/.manl/"${1}_${2}".tmp  ~/.manl/"${1}_${2}"
+	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')			### "${del}" not covering all possible variations.
+	# del=$(man "${1}" "${2}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
+										### Man pages changed to blank first line, var was empty 2024-02-25.
+	del=$(man "${1}" "${2}" | awk 'NF{print;exit}' | awk '{print $1}')	### Revision finds first non blank line, then prints first field of it.
+
+	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes."
+
+	sed -i '/'"$del"'/,$d' ~/.manl/"${1}_${2}"	# > ~/.manl/"${1}_${2}".tmp	### Implemented the sed "-i" edit in place option.
+							# mv ~/.manl/"${1}_${2}".tmp  ~/.manl/"${1}_${2}"
     elif
 	[[ -n ${2} ]]; then
 	rm ~/.manl/"${1}_${2}_"
@@ -166,10 +170,11 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
 									### Man pages changed to blank first line, var was empty 2024-02-25.
 	del=$(man "${1}" | awk 'NF{print;exit}' | awk '{print $1}')	### Revision finds first non blank line, then prints first field of it.
-	echo "Deleted everything after first line with \"${del}\", to remove manpage from notes." 
 
-	sed '/'"$del"'/,$d' ~/.manl/"${1}" > ~/.manl/"${1}".tmp
-	mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
+	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes." 
+
+	sed -i '/'"$del"'/,$d' ~/.manl/"${1}"	#> ~/.manl/"${1}".tmp	### Implemented the sed "-i" edit in place option.
+						# mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
     elif
 	[[ -z ${2} ]]; then
 	rm ~/.manl/"${1}_"
