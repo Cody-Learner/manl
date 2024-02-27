@@ -30,3 +30,4 @@ Added some troubleshooting information code.								<br>
 Revised printed to shell message for clarity.								<br>
 Added the "-i" edit in place option to sed resulting in code reducion.					<br>
 Added comment related to shell check.									<br>
+Combined two awk commands into one used in the "del" variable assignment.				<br>
