@@ -21,6 +21,8 @@ Examples:												<br>
 													<br>
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 													<br>
+**UPDATE For July 13, 2024**										<br>
+Brought up to date of currently used script.								<br>
 													<br>
 **UPDATE For  Feb 25 and 26, 2024**									<br>
 Man pages added an empty line at beginning, breaking the 'del' variable.				<br>

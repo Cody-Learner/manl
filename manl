@@ -82,21 +82,25 @@ fi
 
 if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then		### IF [NUMBER]_[MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}_${2}" /tmp/"${1}_${2}_"
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
+#	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" 2>/dev/null
     elif
 	[[ -n ${2} ]]; then
 
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit	#[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
+#	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit	#[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"  2>/dev/null || exit	
 fi
 
 
 if	[[ -z ${2} ]] && [[ -e ~/.manl/${1} ]]; then			### IF (no number) [MANPAGE] exists in ~/.manl
 	cp ~/.manl/"${1}" /tmp/"${1}_"
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
+#	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_"  2>/dev/null
     elif
 	[[ -z ${2} ]]; then
 
-	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit			#[[ -s ~/.manl/${1} ]] ; "$Editor" ~/.manl/"${1}" ; exit || exit
+#	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit			#[[ -s ~/.manl/${1} ]] ; "$Editor" ~/.manl/"${1}" ; exit || exit
+	MANWIDTH=146 man "${1}" >>/tmp/"${1}_" || exit   2>/dev/null
 fi
 
 
@@ -114,11 +118,11 @@ if	[[ -n ${2} ]]; then						### IN EDITOR [NUMBER]_[MANPAGE]
 fi
 
 if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
-	echo; echo "New notes saved as ~/.manl/${1}_${2}"
+	echo "New notes saved as ~/.manl/${1}_${2}"
 
 		if	[[ -e  ~/.manl/${1}_${2} ]]; then
 			mv ~/.manl/"${1}_${2}" ~/.manl/"${1}_${2}.manlbu"
-			echo; echo "Pre-edited notes saved as ~/.manl/${1}_${2}.manlbu" ; echo
+			echo "Pre-edited notes saved as ~/.manl/${1}_${2}.manlbu"
 		fi
 
 	cp ~/.manl/"${1}_${2}_"  ~/.manl/"${1}_${2}"
@@ -128,7 +132,8 @@ if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')			### "${del}" not covering all possible variations.
 	# del=$(man "${1}" "${2}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
 										### Man pages changed to blank first line, var was empty 2024-02-25.
-	del=$(man "${1}" "${2}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+#	del=$(man "${1}" "${2}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+	del=$(man "${1}" "${2}" 2>/dev/null | awk 'NF{print $1; exit}')
 
 	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes."
 
@@ -155,11 +160,11 @@ if	[[ -z ${2} ]]; then						### IN EDITOR (no number) [MANPAGE]
 fi
 
 if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
-	echo; echo "New notes saved as ~/.manl/${1}"
+	echo "New notes saved as ~/.manl/${1}"
 
 		if	[[ -e  ~/.manl/"${1}" ]]; then
 			mv ~/.manl/"${1}" ~/.manl/"${1}.manlbu"
-			echo; echo "Pre-edited notes saved as ~/.manl/${1}.manlbu" ; echo
+			echo "Pre-edited notes saved as ~/.manl/${1}.manlbu"
 		fi
 
 	cp ~/.manl/"${1}_"  ~/.manl/"${1}"
@@ -169,7 +174,8 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')		### "${del}" not covering all possible variations.
 	# del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
 									### Man pages changed to blank first line, var was empty 2024-02-25.
-	del=$(man "${1}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+#	del=$(man "${1}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+	del=$(man "${1}" 2>/dev/null | awk 'NF{print $1; exit}')
 
 	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes." 
 
