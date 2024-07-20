@@ -22,6 +22,12 @@ Examples:												<br>
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 													<br>
 **UPDATE For July 13, 2024**										<br>
+Added to manl: 												<br>
+Dependencies list. 											<br>
+Script exits with message upon 'EDITOR' variable not being setup.					<br>
+Creates `$HOME/.manl` directory if not present.								<br>
+													<br>
+**UPDATE For July 13, 2024**										<br>
 Brought up to date of currently used script.								<br>
 													<br>
 **UPDATE For  Feb 25 and 26, 2024**									<br>
