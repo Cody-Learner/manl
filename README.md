@@ -21,7 +21,7 @@ Examples:												<br>
 													<br>
 Screenshot manl: https://cody-learner.github.io/find.html 						<br>
 													<br>
-**UPDATE For July 13, 2024**										<br>
+**UPDATE For July 20, 2024**										<br>
 Added to manl: 												<br>
 Dependencies list. 											<br>
 Script exits with message upon 'EDITOR' variable not being setup.					<br>
