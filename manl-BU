@@ -1,23 +1,18 @@
 #!/bin/bash
-# manl 2024-07-20
-# dependencies: man-db nano leafpad xorg-server
+# manl 2024-02-26
+# historically opened [man] pages in [l]eafpad
 
 export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${BASH_SOURCE} line#:${LINENO} function:${FUNCNAME[0]:+${FUNCNAME[0]}(): }\nstatement: '
 
 #=======================================================================================================
-			# Uncomment/edit next 3 lines if your EDITOR is not setup.
+			# Uncomment/edit 3 lines here if your EDITOR is not setup.
+#CLIeditor=nano
+#GUIeditor=leafpad
 
-# CLIeditor=nano
-# GUIeditor=leafpad
-# [[ -z ${DISPLAY} ]] && Editor="${CLIeditor}" || Editor="${GUIeditor}"
-
-[[ ! -v EDITOR ]] && [[ ! -v  Editor ]] && { echo " ERROR: EDITOR variable not set. See manl script, \"EDITOR is not setup\"." ; exit ; }
+#[[ -z $D{ISPLAY} ]] && Editor="${CLIeditor}" || Editor="${GUIeditor}"
 
 #=======================================================================================================
-
 [[ -z ${Editor} ]] && Editor="${EDITOR}"								### SC2153 Setting Editor, not EDITOR.
-[[ ! -d ${HOME}/.manl ]] && mkdir -p ${HOME}/.manl							### Create ${HOME}/.manl if not setup.
-
 #=======================================================================================================
 	# Cleanup. If term closed without closing manl, leaves unwanted stuff in ~/.manl
 
@@ -137,8 +132,8 @@ if	[[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')			### "${del}" not covering all possible variations.
 	# del=$(man "${1}" "${2}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
 										### Man pages changed to blank first line, var was empty 2024-02-25.
-	# del=$(man "${1}" "${2}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
-	  del=$(man "${1}" "${2}" 2>/dev/null | awk 'NF{print $1; exit}')
+#	del=$(man "${1}" "${2}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+	del=$(man "${1}" "${2}" 2>/dev/null | awk 'NF{print $1; exit}')
 
 	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes."
 
@@ -179,8 +174,8 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(echo "${1}" | tr '[:lower:]' '[:upper:]')		### "${del}" not covering all possible variations.
 	# del=$(man "${1}" | awk 'NR==1{print $1}')			### Revision to improve robustness Nov 10, 2020.
 									### Man pages changed to blank first line, var was empty 2024-02-25.
-	# del=$(man "${1}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
-	  del=$(man "${1}" 2>/dev/null | awk 'NF{print $1; exit}')
+#	del=$(man "${1}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
+	del=$(man "${1}" 2>/dev/null | awk 'NF{print $1; exit}')
 
 	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes." 
 
