@@ -1,8 +1,6 @@
 #!/bin/bash
-# manl 2024-07-20
+# manl 2024-08-09
 # dependencies: man-db nano leafpad xorg-server
-
-export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${BASH_SOURCE} line#:${LINENO} function:${FUNCNAME[0]:+${FUNCNAME[0]}(): }\nstatement: '
 
 #=======================================================================================================
 			# Uncomment/edit next 3 lines if your EDITOR is not setup.
@@ -14,9 +12,19 @@ export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${
 [[ ! -v EDITOR ]] && [[ ! -v  Editor ]] && { echo " ERROR: EDITOR variable not set. See manl script, \"EDITOR is not setup\"." ; exit ; }
 
 #=======================================================================================================
+			# Check/install deps
+
+if	! type man leafpad nano Xorg &>/dev/null; then
+	printf '\f%s\n' " ERROR: Dependencies missing."
+	printf '%s\f\n' " Rechecking/installing dependencies with pacman... "
+	sudo pacman --color=always -S --needed man-db leafpad nano xorg-server
+	exit
+fi
+
+#=======================================================================================================
 
 [[ -z ${Editor} ]] && Editor="${EDITOR}"								### SC2153 Setting Editor, not EDITOR.
-[[ ! -d ${HOME}/.manl ]] && mkdir -p ${HOME}/.manl							### Create ${HOME}/.manl if not setup.
+[[ ! -d ${HOME}/.manl ]] && mkdir -p "${HOME}"/.manl							### Create ${HOME}/.manl if not setup.
 
 #=======================================================================================================
 	# Cleanup. If term closed without closing manl, leaves unwanted stuff in ~/.manl
@@ -26,7 +34,7 @@ export PS4='\nDEBUG level:$SHLVL subshell-level: $BASH_SUBSHELL \nsource-file:${
 #=======================================================================================================
 			# Print [-h --help] page
 
-if	[[ -z ${1} ]] || [[ ${1} = -h ]] || [[ ${1} = --help ]]; then 
+if	[[ -z ${1} ]] || [[ ${1} = -h ]] || [[ ${1} = --help ]]; then
 
 cat << 'EOF'
 
@@ -47,7 +55,7 @@ cat << 'EOF'
     Man pages path  : /usr/share/man/man<#>/<NAME>.<#>.gz
     Saved notes path:  ~/.manl/<NAME>  -OR-  ~/.manl/<#> <NAME>
 
-    To save notes, just save in editor. 
+    To save notes, just save in editor.
     manl will create or edit ~/.manl/<NAME>  -OR-  ~/.manl/<#> <NAME> as needed.
     Manpage is removed from notes after saving.
     No changes are made to manpages.
@@ -63,12 +71,12 @@ fi
 #=======================================================================================================
 			# Search Operations 	# man -wK "${2}" | awk -F / '{print $5 " " $6}'
 
-if	[[ $1 = -sn ]]; then 
+if	[[ $1 = -sn ]]; then
 	find /usr/share/man/man* | awk -v manp="${2}" -F / ' $0 ~ "/"manp {print $5 " " $6}'
     exit
 fi
 
-if	[[ $1 = -st ]]; then 
+if	[[ $1 = -st ]]; then
 	man -k "${2}"
     exit
 fi
@@ -93,7 +101,7 @@ if	[[ -n ${2} ]] && [[ -e  ~/.manl/${1}_${2} ]]; then		### IF [NUMBER]_[MANPAGE]
 	[[ -n ${2} ]]; then
 
 #	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_" || exit	#[[ -s ~/.manl/${1}_${2} ]] && "$Editor" ~/.manl/"${1}_${2}" ; exit || exit
-	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"  2>/dev/null || exit	
+	MANWIDTH=146 man "${1}" "${2}" >>/tmp/"${1}_${2}_"  2>/dev/null || exit
 fi
 
 
@@ -182,7 +190,7 @@ if	[[ -z ${2} ]] && [[ ${tmpmd5} != "${manlmd5}" ]]; then
 	# del=$(man "${1}" | awk 'NF{print $1; exit}')			### Revision finds first non blank line, then prints first field of it.
 	  del=$(man "${1}" 2>/dev/null | awk 'NF{print $1; exit}')
 
-	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes." 
+	echo "Deleted everything including first line with \"${del}\", to remove manpage from notes."
 
 	sed -i '/'"$del"'/,$d' ~/.manl/"${1}"	#> ~/.manl/"${1}".tmp	### Implemented the sed "-i" edit in place option.
 						# mv ~/.manl/"${1}".tmp  ~/.manl/"${1}"
