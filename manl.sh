@@ -15,8 +15,9 @@
 			# Check/install deps
 
 if	! type man leafpad nano Xorg &>/dev/null; then
-	printf '\f%s\n' " ERROR: Dependencies missing."
-	printf '%s\f\n' " Rechecking/installing dependencies with pacman... "
+	printf '\n%s\n' " ERROR: Manl dependencies missing."
+	printf '%s\n'   " Rechecking/installing dependencies with pacman."
+	printf '%s\n\n' " Note: Password will fail with sudo if manl is backgrounded '&' for the 1st run and this comes up."
 	sudo pacman --color=always -S --needed man-db leafpad nano xorg-server
 	exit
 fi
